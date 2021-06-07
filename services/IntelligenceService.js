@@ -1,7 +1,7 @@
 const pool =  require('../db/config');
 
 const getAll = () => {
-    return reports = [
+    return suspects = [
         {
             first_name: 'Tom',
             last_name: 'Marzea',
