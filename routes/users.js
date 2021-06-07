@@ -3,6 +3,7 @@ var router = express.Router();
 const usersService = require('../services/UsersService');
 const accessTokenSecret = require('../Auth/auth');
 const authenticateJWT = require('../services/Auth');
+///
 
 /* GET users listing. */
 router.get("/", authenticateJWT, async (req, res) => {
@@ -14,7 +15,7 @@ router.get("/", authenticateJWT, async (req, res) => {
 router.post('/login', async (req, res) => {
   const { username, password }  = req.body;
 
-  const user = authenticateUser(username, password);
+  const user = await authenticateUser(username, password);
 
   if(user) {
 

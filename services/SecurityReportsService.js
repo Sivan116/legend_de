@@ -1,10 +1,10 @@
 const axios = require('axios');
+const pool =  require('../db/config');
+var format = require('pg-format');
 
 const getReports = async () => {
     axios.get('')
   .then(response => {
-    await pool.query('SELECT * FROM t_suspect_wanted')
-                        .then(res => { return res.rows; });
     const parsedData = parseReports(response.data);
 
     return parsedData;
@@ -26,9 +26,25 @@ const getReportById = (id) => {
   });
 }
 
+const backupReports = (reportsArr) => {
+    const upsertSql = format('INSERT INTO t_events (report_id, ev_type, ev_time, ev_loc)' +
+     'VALUES %L ON CONFLICT ON report_id' + 
+    'DO UPDATE SET ev_type=EXLUDED.ev_type, ev_time=EXLUDED.ev_time, ev_type=EXLUDED.ev_time;', reportsArr); 
+
+    pool.query(upsertSql).then(res => { return res.rows[0];});;
+}
+
 const parseReports = (reports) => {
     reports = JSON.parse(reports);
-    return reports.reports.map(report => {return {"ev_type": report.ev_type, "ev_time": report.ev_time, "ev_loc":report.ev_loc}});
+    let reportsArr = [];
+    reports = reports.reports.map(report => {
+        reportsArr.push([report.report_id, report.ev_type, report.ev_time, report.ev_loc]);
+        return {"ev_type": report.ev_type, "ev_time": report.ev_time, "ev_loc":report.ev_loc}
+    });
+    backupReports(reportsArr);
+    return reports;
 }
+
+
 
 module.exports = {getReports};
