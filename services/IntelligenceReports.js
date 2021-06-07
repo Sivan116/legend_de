@@ -1,5 +1,6 @@
 const axios = require('axios');
 const pool =  require('../db/config');
+const format = require('pg-format');
 
 const getSuspects = async () => {
     axios.get('')

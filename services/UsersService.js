@@ -13,7 +13,7 @@ const authenticateUser = async (username, password) => {
         values: [username],
     }
 
-    const User = await pool.query(query).then(res => { return res.rows[0]; });
+    const User = await pool.query(query).then(res => { return res.rows[0];});
     if(User) {
         bcrypt.compare(password, User.password, function(err, result) {
             if (result) {

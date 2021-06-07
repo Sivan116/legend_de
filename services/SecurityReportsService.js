@@ -1,6 +1,6 @@
 const axios = require('axios');
 const pool =  require('../db/config');
-var format = require('pg-format');
+const format = require('pg-format');
 
 const getReports = async () => {
     axios.get('')
@@ -47,4 +47,4 @@ const parseReports = (reports) => {
 
 
 
-module.exports = {getReports};
+module.exports = {getReports, getReportById};
