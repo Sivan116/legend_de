@@ -39,7 +39,7 @@ const parseReports = (reports) => {
     let reportsArr = [];
     reports = reports.reports.map(report => {
         reportsArr.push([report.report_id, report.ev_type, report.ev_time, report.ev_loc]);
-        return {"ev_type": report.ev_type, "ev_time": report.ev_time, "ev_loc":report.ev_loc}
+        return {"report_id": report.report_id,"ev_type": report.ev_type, "ev_time": report.ev_time, "ev_loc": report.ev_loc}
     });
     backupReports(reportsArr);
     return reports;
