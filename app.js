@@ -4,6 +4,8 @@ var path = require('path');
 const cors = require('cors');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const jwt = require('jsonwebtoken');
+const bodyParser = require('body-parser');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -14,6 +16,7 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
+app.use(bodyParser.json());
 app.use(logger('dev'));
 app.use(cors());
 app.use(express.json());
