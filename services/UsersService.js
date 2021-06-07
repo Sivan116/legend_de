@@ -13,16 +13,12 @@ const authenticateUser = async (username, password) => {
         values: [username],
     }
 
-    const User = await pool.query(query).then(res => { return res.rows[0]; });
-    if(User) {
-        bcrypt.compare(password, User.password, function(err, result) {
-            if (result) {
-              return true;
-            }
-            else {
-              return false;
-            }
-        });
+    const user = await pool.query(query).then(res => { return res.rows[0]; })
+                                  .catch(e => console.error(e.stack));
+    if(user) {
+        return await bcrypt.compare(password, user.password);
+    } else {
+        return false;
     }
 }
 

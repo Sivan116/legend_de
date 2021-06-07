@@ -3,42 +3,18 @@ var router = express.Router();
 const usersService = require('../services/UsersService');
 const accessTokenSecret = require('../Auth/auth');
 const authenticateJWT = require('../services/Auth');
+const jwt = require('jsonwebtoken');
 
-/* GET users listing. */
-router.get("/", authenticateJWT, async (req, res) => {
-  res.status(200).json(await usersService.getAll());
-});
-
-
-//login
 router.post('/login', async (req, res) => {
   const { username, password }  = req.body;
+  const isLoginSuccessful = await usersService.authenticateUser(username, password);
 
-  const user = authenticateUser(username, password);
-
-  if(user) {
-
-    const accessToken = jwt.sign({username: user.username}, accessTokenSecret);
-  
-    res.json({accessToken});
+  if(isLoginSuccessful) {
+    const accessToken = jwt.sign({ username }, accessTokenSecret);
+    res.send({accessToken});
   } else {
-    res.send('Username or password incorrect');
+    res.status(401);
   }
 });
-
-// router.get('/me', async (req, res) => {
-//   const { token } = req.body;
-
-//   const user = authenticateUser(username, password);
-
-//   if(user) {
-
-//     const accessToken = jwt.sign({username: user.username, role: user.role}, accessTokenSecret);
-  
-//     res.json({accessToken});
-//   } else {
-//     res.send('Username or password incorrect');
-//   }
-// });
 
 module.exports = router;
