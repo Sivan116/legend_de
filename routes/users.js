@@ -27,19 +27,4 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// router.get('/me', async (req, res) => {
-//   const { token } = req.body;
-
-//   const user = authenticateUser(username, password);
-
-//   if(user) {
-
-//     const accessToken = jwt.sign({username: user.username, role: user.role}, accessTokenSecret);
-  
-//     res.json({accessToken});
-//   } else {
-//     res.send('Username or password incorrect');
-//   }
-// });
-
 module.exports = router;

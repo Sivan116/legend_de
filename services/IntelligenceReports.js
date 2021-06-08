@@ -3,16 +3,10 @@ const pool =  require('../db/config');
 const format = require('pg-format');
 
 const getSuspects = async () => {
-    axios.get('')
+    axios.get('http://intelligence-api-git-2-intelapp1.apps.openforce.openforce.biz/api/suspects')
   .then(response => {
-    try{
-        const people = JSON.parse(await getPeople());
-    } catch (e) {
-        return await pool.query('SELECT * FROM t_suspect_wanted')
-                        .then(res => { return res.rows; });
-    }
-    
-    return getSuspectsReport(JSON.parse(response.data), people);
+
+    return JSON.stringify(getSuspectsReport(JSON.parse(response.data)));
   })
   .catch(error => {
     return await pool.query('SELECT * FROM t_suspect_wanted')
@@ -20,34 +14,23 @@ const getSuspects = async () => {
   });
 }
 
-const getPeople = async () => {
-    axios.get('')
-  .then(response => {
-    return response.data;
-  })
-  .catch(error => {
-    throw error("can't get reports");
-  });
-}
+const getSuspectsReport = (suspects) => {
+    let suspectsToBackup= [];
 
-const getSuspectsReport = (suspects, people) => {
-    const suspectsId = suspects.Suspect_Table.map(suspect => suspect.person_id);
-    let suspectsArr = [];
-
-    suspects = people.peopleTable.map(person => {
-        if(suspectsId.includes(person.id, person.last_name, person.first_name)){
-            suspectsArr.push([,person.first_name]);
-            return {"first_name": person.first_name, "last_name": person.last_name, "id": person.id};
-        }
+    suspects = suspects.map(suspect => {
+        suspectsToBackup.push([suspect.person.id, suspect.person.firstName, suspect.person.lastName, suspect.person.phoneNumber, suspect.person.adress, suspect.person.personImageUrl, suspect.started, suspect.wanted]);
+        return {"firstName":suspect.person.firstName, "lastName": suspect.person.lastName, "id": suspect.person.id};
+        
     });
     backupSuspects(suspects);
     return suspects;
 }
 
-const backupSuspects = (suspectsArr) => {
-    const upsertSql = format('INSERT INTO t_suspect_wanted (id, last_name, first_name)' +
-     'VALUES %L ON CONFLICT ON report_id' + 
-    'DO UPDATE SET ev_type=EXLUDED.ev_type, ev_time=EXLUDED.ev_time, ev_type=EXLUDED.ev_time;', reportsArr); 
+const backupSuspects = (suspects) => {
+    const upsertSql = format('INSERT INTO t_suspects_wanted (personId, firstName, lastName, phoneNumber, adress, personImageURL, started, wanted)' +
+     'VALUES %L ON CONFLICT ON personId' + 
+    'DO UPDATE SET' +  
+    'firstName=EXLUDED.firstName, lastName=EXLUDED.lastName, phoneNumber=EXLUDED.phoneNumber, adress=EXLUDED.adress, personImageURL=EXLUDED.personImageURL, started=EXLUDED.started, wanted=EXLUDED.wanted;', suspects); 
 
     pool.query(upsertSql).then(res => { return res.rows[0];});;
 }
