@@ -11,8 +11,8 @@ router.get('/threshold', async (req, res) => {
 });
 
 router.put('/threshold', async (req, res) => {
-   const { day, threshold } = req.body;
-   res.send(await reportsService.getReportsThreshold(day, threshold));
+   const { thresholdArray } = req.body;
+   res.send(await reportsService.updateReportsThreshold(thresholdArray));
 });
 
 module.exports = router;

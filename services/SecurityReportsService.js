@@ -30,19 +30,19 @@ const parseReports = (reportsJSON) => {
     reportsJSON = JSON.parse(reportsJSON);
     let reportsToBackup = [];
     reportsJSON = reportsJSON.reports.map(report => {
-        reportsToBackup.push([report.ev_type, report.ev_time, report.ev_report_time, report.reporter_id, report.ev_loc, report.report_id]);
-        return {"report_id": report.report_id,"ev_type": report.ev_type, "ev_time": report.ev_time, "ev_loc": report.ev_loc};
+        reportsToBackup.push([report.ev_type, report.ev_time, report.ev_report_time, report.reporter_id, report.ev_area, report.report_id]);
+        return {"report_id": report.report_id,"ev_type": report.ev_type, "ev_time": report.ev_time, "ev_area": report.ev_area};
     });
     backupReports(reportsToBackup);
     return reports;
 }
 
-const backupReports = (reportsArr) => {
-    const upsertSql = format('INSERT INTO t_events (ev_type, ev_time,ev_report_time, reporter_id, ev_loc, report_id)' +
+const backupReports = async (reportsArr) => {
+    const upsertSql = format('INSERT INTO t_events (ev_type, ev_time,ev_report_time, reporter_id, ev_area, report_id)' +
      'VALUES %L ON CONFLICT ON report_id' + 
-    'DO UPDATE SET ev_type=EXLUDED.ev_type, ev_time=EXLUDED.ev_time, ev_report_time=EXLUDED.ev_report_time, ev_loc=EXLUDED.ev_loc, reporter_id=EXLUDED.reporter_id;', reportsArr); 
+    'DO UPDATE SET ev_type=EXLUDED.ev_type, ev_time=EXLUDED.ev_time, ev_report_time=EXLUDED.ev_report_time, ev_area=EXLUDED.ev_area, reporter_id=EXLUDED.reporter_id;', reportsArr); 
 
-    pool.query(upsertSql).then(res => { return res.rows[0]; });
+    await pool.query(upsertSql);
 }
 
 const reportsByDate = (date) => {
@@ -69,12 +69,17 @@ const getReportsThresholdByDay = async (day) => {
   return await pool.query(query).then(res => { return res.rows; });
 }
 
-const updateReportsThreshold = async (day, newThreshold) => {
-  const query = {
-    name: 'update-report-threshold',
-    text: 'UPDATE t_reports_threshold SET threshold = $2 WHERE day = $1 ', 
-    values: [day, newThreshold],
+const updateReportsThreshold = async (thresholdArray) => {
+  twoDArray = [];
+  for (threshold in thresholdArray) {
+    twoDArray.push([threshold])
   }
+  const upsertSql = format('INSERT INTO t_reports_threshold (threshold)' +
+     'VALUES %L ON CONFLICT ON day' + 
+    'DO UPDATE SET' +  
+    'threshold=EXLUDED.threshold', twoDArray); 
+    
+    pool.query(upsertSql).then(res => { return res.rows[0];});
 
   return await pool.query(query); 
 }

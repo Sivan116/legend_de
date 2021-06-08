@@ -28,13 +28,13 @@ const getSuspectsReport = (suspects) => {
     return suspects;
 }
 
-const backupSuspects = (suspectsToBackup) => {
+const backupSuspects = async (suspectsToBackup) => {
     const upsertSql = format('INSERT INTO t_suspects_wanted (personId, firstName, lastName, phoneNumber, adress, personImageURL, started, wanted)' +
      'VALUES %L ON CONFLICT ON personId' + 
     'DO UPDATE SET' +  
     'firstName=EXLUDED.firstName, lastName=EXLUDED.lastName, phoneNumber=EXLUDED.phoneNumber, adress=EXLUDED.adress, personImageURL=EXLUDED.personImageURL, started=EXLUDED.started, wanted=EXLUDED.wanted;', suspectsToBackup); 
     
-    pool.query(upsertSql).then(res => { return res.rows[0];});;
+    await pool.query(upsertSql);
 }
 
 const getWanted = async () => {
@@ -43,7 +43,7 @@ const getWanted = async () => {
     return getSuspectsReport(response.data).filter(suspect => { return suspect.wanted === true })
                                            .map(suspect =>  { return {
         "firstName": suspect.firstName, "lastName": suspect.lastName, "id": suspect.id
-    }});;
+    }});
   })
   .catch(error => {
     return pool.query('SELECT * FROM t_suspect_wanted WHERE wanted = true')
