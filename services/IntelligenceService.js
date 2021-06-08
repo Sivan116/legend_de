@@ -3,10 +3,12 @@ const pool =  require('../db/config');
 const format = require('pg-format');
 
 const getSuspects = async () => {
-    axios.get('http://intelligence-api-git-2-intelapp1.apps.openforce.openforce.biz/api/suspects')
+   return axios.get('http://intelligence-api-git-2-intelapp1.apps.openforce.openforce.biz/api/suspects')
   .then(response => {
-
-    return JSON.stringify(getSuspectsReport(JSON.parse(response.data)));
+    return getSuspectsReport(response.data).filter(suspect => { return suspect.wanted === false })
+                                           .map(suspect =>  { return {
+                                                "firstName": suspect.firstName, "lastName": suspect.lastName, "id": suspect.id
+                                            }});;
   })
   .catch(error => {
     return pool.query('SELECT * FROM t_suspect_wanted')
@@ -19,7 +21,7 @@ const getSuspectsReport = (suspects) => {
 
     suspects = suspects.map(suspect => {
         suspectsToBackup.push([suspect.person.id, suspect.person.firstName, suspect.person.lastName, suspect.person.phoneNumber, suspect.person.adress, suspect.person.personImageUrl, suspect.started, suspect.wanted]);
-        return {"firstName":suspect.person.firstName, "lastName": suspect.person.lastName, "id": suspect.person.id};
+        return {"firstName":suspect.person.firstName, "lastName": suspect.person.lastName, "id": suspect.person.id, "wanted": suspect.wanted };
         
     });
     backupSuspects(suspects);
@@ -36,9 +38,12 @@ const backupSuspects = (suspects) => {
 }
 
 const getWanted = async () => {
-    axios.get('http://intelligence-api-git-2-intelapp1.apps.openforce.openforce.biz/api/suspects/wanted')
+    return axios.get('http://intelligence-api-git-2-intelapp1.apps.openforce.openforce.biz/api/suspects/wanted')
   .then(response => {
-    return JSON.stringify(getSuspectsReport(JSON.parse(response.data)));
+    return getSuspectsReport(response.data).filter(suspect => { return suspect.wanted === true })
+                                           .map(suspect =>  { return {
+        "firstName": suspect.firstName, "lastName": suspect.lastName, "id": suspect.id
+    }});;
   })
   .catch(error => {
     return pool.query('SELECT * FROM t_suspect_wanted WHERE wanted = true')

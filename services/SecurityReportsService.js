@@ -3,7 +3,7 @@ const pool =  require('../db/config');
 const format = require('pg-format');
 
 const getReports = async () => {
-    axios.get('')//TODO get Secutiry API
+  return axios.get('')//TODO get Secutiry API
   .then(response => {
     const parsedData = parseReports(response.data);
 
@@ -16,7 +16,7 @@ const getReports = async () => {
 }
 
 const getReportById = async (id) => {
-    axios.get('')//TODO get Secutiry API
+  return axios.get('')//TODO get Secutiry API
   .then(response => {
 
     return response.data; 
