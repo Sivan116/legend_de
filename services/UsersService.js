@@ -9,7 +9,7 @@ const getAll = async () => {
 const authenticateUser = async (username, password) => {
     const query = {
         name: 'fetch-user',
-        text: 'SELECT * FROM t_users WHERE username = $1',
+        text: 'SELECT * FROM t_users WHERE username = $1', 
         values: [username],
     }
 

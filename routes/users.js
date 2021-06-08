@@ -5,6 +5,11 @@ const accessTokenSecret = require('../Auth/auth');
 const authenticateJWT = require('../services/Auth');
 const jwt = require('jsonwebtoken');
 
+router.get("/", async (req, res) => {
+  res.status(200).json(await usersService.getAll());
+});
+
+
 router.post('/login', async (req, res) => {
   const { username, password }  = req.body;
   const isLoginSuccessful = await usersService.authenticateUser(username, password);

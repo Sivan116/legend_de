@@ -2,9 +2,8 @@ var express = require('express');
 var router = express.Router();
 const reportsService = require('../services/IntelligenceService');
 
-/* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send(reportsService.getAll());
+router.get('/', (req, res, next) => {
+  res.status(200).json(reportsService.getSuspects());
 });
 
 module.exports = router;
