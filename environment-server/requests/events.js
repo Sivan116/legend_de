@@ -15,6 +15,13 @@ exports.getHolidays = async (year,month) => {
 &year=${year}\
 &month=${month}`)
         .then(response => response.json())
-        .then(data => data.response.holidays);
+        .then(data => JSON.stringify(data.response.holidays.map(holiday => {
+            holiday.country = holiday.country.id;
+            holiday.date = holiday.date.iso;
+            delete holiday.locations
+            delete holiday.states
+            delete holiday.type
+            return holiday;
+        })))
     }))).reduce((currArr,prevArr) => prevArr.concat(currArr)))
 }

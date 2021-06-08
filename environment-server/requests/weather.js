@@ -13,5 +13,6 @@ fields=temperatureApparent,temperature,humidity,windSpeed&\
 timesteps=1d&\
 units=metric&apikey=${API_KEY}`)
     .then(response => response.json())
-    .then(data => data.data.timelines[0].intervals);
+    .then(data => data.data.timelines[0].intervals
+        .map(weather => formattedWeather = JSON.stringify({time:weather.startTime.split("T")[0],...weather.values})));
 }
