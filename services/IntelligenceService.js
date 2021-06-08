@@ -24,16 +24,16 @@ const getSuspectsReport = (suspects) => {
         return {"firstName":suspect.person.firstName, "lastName": suspect.person.lastName, "id": suspect.person.id, "wanted": suspect.wanted };
         
     });
-    backupSuspects(suspects);
+    backupSuspects(suspectsToBackup);
     return suspects;
 }
 
-const backupSuspects = (suspects) => {
+const backupSuspects = (suspectsToBackup) => {
     const upsertSql = format('INSERT INTO t_suspects_wanted (personId, firstName, lastName, phoneNumber, adress, personImageURL, started, wanted)' +
      'VALUES %L ON CONFLICT ON personId' + 
     'DO UPDATE SET' +  
-    'firstName=EXLUDED.firstName, lastName=EXLUDED.lastName, phoneNumber=EXLUDED.phoneNumber, adress=EXLUDED.adress, personImageURL=EXLUDED.personImageURL, started=EXLUDED.started, wanted=EXLUDED.wanted;', suspects); 
-
+    'firstName=EXLUDED.firstName, lastName=EXLUDED.lastName, phoneNumber=EXLUDED.phoneNumber, adress=EXLUDED.adress, personImageURL=EXLUDED.personImageURL, started=EXLUDED.started, wanted=EXLUDED.wanted;', suspectsToBackup); 
+    
     pool.query(upsertSql).then(res => { return res.rows[0];});;
 }
 

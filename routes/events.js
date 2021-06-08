@@ -1,18 +1,18 @@
 var express = require('express');
 var router = express.Router();
-const weatherService = require('../services/WeatherService');
+const eventsService = require('../services/EventsService');
 
 router.post('/', async (req, res) => {
     const { weather } = req.body;
-    res.send(await weatherService.updateWeather(weather));
+    res.send(await eventsService.updateWeather(weather));
 });
 
 router.get('/weather', async (req, res) => {
-    return res.json(await weatherService.getWeatherForecast());
+    return res.json(await eventsService.getWeatherForecast());
 });
 
 router.get('/calendar', async (req, res) => {
-    return res.json(await weatherService.getWeatherForecast());
+    return res.json(await eventsService.getCalendarEvents());
 });
 
 module.exports = router;

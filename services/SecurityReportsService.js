@@ -3,7 +3,7 @@ const pool =  require('../db/config');
 const format = require('pg-format');
 
 const getReports = async () => {
-  return axios.get('')//TODO get Secutiry API
+  return axios.get('http://police-site-server-git-sivan-securityapp1.apps.openforce.openforce.biz/report')
   .then(response => {
     const parsedData = parseReports(response.data);
 
@@ -16,7 +16,7 @@ const getReports = async () => {
 }
 
 const getReportById = async (id) => {
-  return axios.get('')//TODO get Secutiry API
+  return axios.get(`http://police-site-server-git-sivan-securityapp1.apps.openforce.openforce.biz/accident/id/${id}}`)//TODO get Secutiry API
   .then(response => {
 
     return response.data; 
@@ -45,7 +45,45 @@ const backupReports = (reportsArr) => {
     pool.query(upsertSql).then(res => { return res.rows[0]; });
 }
 
+const reportsByDate = (date) => {
+  const query = {
+    name: 'fetch-report-byDate',
+    text: 'SELECT * FROM t_reports WHERE ev_time = date', 
+    values: [date],
+  }
+  return pool.query(query).then(res => { return res.rows; })
+                                 .catch(e => console.error(e.stack));
+}
+
+const getReportsThreshold = async () => {
+  return await pool.query('SELECT * FROM t_reports_threshold').then(res => { return res.rows; });
+}
+
+const getReportsThresholdByDay = async (day) => {
+  const query = {
+    name: 'fetch-threshold-by-day',
+    text: 'SELECT * FROM t_reports_threshold WHERE day = $1', 
+    values: [day],
+  }
+
+  return await pool.query(query).then(res => { return res.rows; });
+}
+
+const updateReportsThreshold = async (day, newThreshold) => {
+  const query = {
+    name: 'update-report-threshold',
+    text: 'UPDATE t_reports_threshold SET threshold = $2 WHERE day = $1 ', 
+    values: [day, newThreshold],
+  }
+
+  return await pool.query(query); 
+}
+
 module.exports = { 
   getReports,
-  getReportById
+  getReportById,
+  reportsByDate,
+  getReportsThreshold,
+  getReportsThresholdByDay,
+  updateReportsThreshold
 };
