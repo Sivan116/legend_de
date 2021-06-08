@@ -15,6 +15,62 @@ const getReports = async () => {
   });
 }
 
+const getReportsForWeek = async () => {
+    const week = [];
+    let allReports = JSON.parse( await getReports());
+
+    for(let day = new Date(); day < new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);  day.setDate(day.getDate() - 1)){
+        const dayEvents = allReports.filter(report => report.ev_time === day);
+        week.push({date: day, count: dayEvents.length});
+    }
+
+    return JSON.stringify(week);
+  
+}
+
+const f = () => {
+  let today = new Date();
+
+  let allReports = [
+        {
+          ev_type: "stabbing",
+          ev_time: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 2),
+          ev_report_time: "datetime",
+          reporter_id: "policeman 1 id",
+          ev_loc: "location",
+          report_id: "1",
+        },
+        {
+          ev_type: "shooting",
+          ev_time: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 2),
+          ev_report_time: "datetime",
+          reporter_id: "policeman 3 id",
+          ev_loc: "location",
+          report_id: "2",
+        },
+        {
+          ev_type: "accident",
+          ev_time: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1),
+          ev_report_time: "datetime",
+          reporter_id: "policeman 19 id",
+          ev_loc: "location",
+          report_id: "3"  ,
+        }
+      ];
+  
+  let week = [];
+   console.log(allReports);
+  
+  for(let day = new Date(today); day >= new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);  
+  day.setDate(day.getDate() - 1)){
+          console.log(day);
+          const dayEvents = allReports.filter(report => new Date(report.ev_time).setTime(0,0,0,0) === new Date(day).setTime(0,0,0,0));
+          week.push({date: new Date(day), count: dayEvents.length});
+      }
+      
+      console.log(week);
+}
+
 const getReportById = async (id) => {
     axios.get('')//TODO get Secutiry API
   .then(response => {
@@ -47,5 +103,6 @@ const backupReports = (reportsArr) => {
 
 module.exports = { 
   getReports,
-  getReportById
+  getReportById, 
+  f
 };
