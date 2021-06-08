@@ -35,6 +35,18 @@ const backupSuspects = (suspects) => {
     pool.query(upsertSql).then(res => { return res.rows[0];});;
 }
 
+const getWanted = async () => {
+    axios.get('http://intelligence-api-git-2-intelapp1.apps.openforce.openforce.biz/api/suspects/wanted')
+  .then(response => {
+    return JSON.stringify(getSuspectsReport(JSON.parse(response.data)));
+  })
+  .catch(error => {
+    return pool.query('SELECT * FROM t_suspect_wanted WHERE wanted = true')
+                        .then(res => { return res.rows; });
+  });
+}
+
 module.exports = { 
-    getSuspects 
+    getSuspects,
+    getWanted
 };
