@@ -15,7 +15,7 @@ const getSuspects = async () => {
 }
 
 const getSuspectsReport = (suspects) => {
-    let suspectsToBackup= [];
+    let suspectsToBackup = [];
 
     suspects = suspects.map(suspect => {
         suspectsToBackup.push([suspect.person.id, suspect.person.firstName, suspect.person.lastName, suspect.person.phoneNumber, suspect.person.adress, suspect.person.personImageUrl, suspect.started, suspect.wanted]);
