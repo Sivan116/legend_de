@@ -3,7 +3,7 @@ const pool =  require('../db/config');
 const pgFormat = require('pg-format');
 
 const getReports = async () => {
-  return axios.get('http://police-site-server-git-sivan-securityapp1.apps.openforce.openforce.biz/report')
+  return axios.get('http://police-site-server-git-sivan-securityapp1.apps.openforce.openforce.biz/report', { timeout: 9000 })
   .then(response => {
     return parseReports(response.data);
   })
@@ -16,7 +16,6 @@ const getReports = async () => {
 const getReportById = async (id) => {
   return axios.get(`http://police-site-server-git-sivan-securityapp1.apps.openforce.openforce.biz/accident/id/${id}}`)
   .then(response => {
-
     return response.data; 
   })
   .catch(error => {

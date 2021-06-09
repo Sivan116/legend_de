@@ -3,12 +3,11 @@ const pool =  require('../db/config');
 const pgFormat = require('pg-format');
 
 const getSuspects = async () => {
-   return axios.get('http://intelligence-api-git-2-intelapp1.apps.openforce.openforce.biz/api/suspects')
+   return axios.get('http://intelligence-api-git-2-intelapp1.apps.openforce.openforce.biz/api/suspects', { timeout: 9000 })
   .then(response => {
     return removeWantedProperty(parseSuspects(response.data).filter(suspect => { return suspect.wanted === false }));
   })
   .catch(err => {
-    console.log()
     return pool.query('SELECT * FROM t_suspects_wanted;')
                         .then(res => { return removeWantedProperty(parseSuspectsFromDBBackup(res.rows)); });
   });
@@ -46,7 +45,7 @@ const backupSuspects = async (suspectsToBackup) => {
 }
 
 const getWanted = async () => {
-    return axios.get('http://intelligence-api-git-2-intelapp1.apps.openforce.openforce.biz/api/suspects/wanted')
+    return axios.get('http://intelligence-api-git-2-intelapp1.apps.openforce.openforce.biz/api/suspects/wanted', { timeout: 9000 })
   .then(response => {
     return removeWantedProperty(parseSuspects(response.data).filter(suspect => { return suspect.wanted === true }));
   })
