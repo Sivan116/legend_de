@@ -16,15 +16,16 @@ const getSuspects = async () => {
 
 const parseSuspects = async (suspects) => {
     let suspectsToBackup = [];
-
+    let suspectsId = [];
 
     suspects = suspects.map(suspect => {
+        suspectsId.push(suspect.person.id);
         suspectsToBackup.push([suspect.person.id, suspect.person.firstName, suspect.person.lastName, suspect.person.phoneNumber, suspect.person.address, suspect.person.personImageURL, suspect.started, suspect.wanted]);
         return {"firstName":suspect.person.firstName, "lastName": suspect.person.lastName, "id": suspect.person.id, "wanted": suspect.wanted };
         
     });
     if (suspectsToBackup) {
-      await backupSuspects(suspectsToBackup);
+      await backupSuspects(suspectsToBackup, suspectsId);
     }
     return suspects;
 }
@@ -35,13 +36,14 @@ const parseSuspectsFromDBBackup = (suspects) => {
   });
 }
 
-const backupSuspects = async (suspectsToBackup) => {
+const backupSuspects = async (suspectsToBackup, newSuspectsId) => {
     const upsertSql = pgFormat(
+      'DELETE FROM t_suspects_wanted WHERE personid NOT IN (%L); ' +
       'INSERT INTO t_suspects_wanted(personid, firstname, lastname, phonenumber, address, personimageurl, started, wanted) ' +
       'VALUES %L ' +
       'ON CONFLICT (personId) ' + 
       'DO UPDATE SET ' +  
-      'firstName=EXCLUDED.firstName, lastName=EXCLUDED.lastName, phoneNumber=EXCLUDED.phoneNumber, address=EXCLUDED.address, personImageURL=EXCLUDED.personImageURL, started=EXCLUDED.started, wanted=EXCLUDED.wanted;', suspectsToBackup); 
+      'firstName=EXCLUDED.firstName, lastName=EXCLUDED.lastName, phoneNumber=EXCLUDED.phoneNumber, address=EXCLUDED.address, personImageURL=EXCLUDED.personImageURL, started=EXCLUDED.started, wanted=EXCLUDED.wanted;', newSuspectsId, suspectsToBackup); 
     
     await pool.query(upsertSql);
 }
