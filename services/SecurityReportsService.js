@@ -41,29 +41,32 @@ const getReportById = async (type, id) => {
 }
 
 const parseReports = async (reportsJSON) => {
-    let reportsToBackup = [];
-    reportsJSON = reportsJSON.map(report => {
-        reportsToBackup.push([report.ev_type, report.ev_time, report.evreporttime, report.reporter_id, report.report_id, report.ev_locx, report.ev_locy, report.ev_area]);
-        return {"report_id": report.report_id,"ev_type": report.ev_type, "ev_time": report.ev_time, "ev_area": report.ev_area};
-    });
+  let reportsToBackup = [];
+  let newReportsId = [];
+  reportsJSON = reportsJSON.map(report => {
+    newReportsId.push(report.report_id);
+      reportsToBackup.push([report.ev_type, report.ev_time, report.ev_report_time, report.reporter_id, report.report_id, report.ev_locx, report.ev_locy, report.ev_area]);
+      return {"report_id": report.report_id,"ev_type": report.ev_type, "ev_time": report.ev_time, "ev_area": report.ev_area};
+  });
 
-    if (reportsToBackup) {
-      await backupReports(reportsToBackup);
-    }
+  if (reportsToBackup) {
+    await backupReports(reportsToBackup, newReportsId);
+  }
 
-    return reportsJSON;
+  return reportsJSON;
 }
 
-const backupReports = async (reportsArr) => {
+const backupReports = async (reportsArr, newReportsId) => {
 
-    const upsertSql = pgFormat(
-      'INSERT INTO t_reports (ev_type, ev_time, ev_report_time, reporter_id, report_id, ev_locx, ev_locy, ev_area) ' +
-      'VALUES %L ' + 
-      'ON CONFLICT (report_id) ' + 
-      'DO UPDATE SET ' +
-      'ev_type=EXCLUDED.ev_type, ev_time=EXCLUDED.ev_time, ev_report_time=EXCLUDED.ev_report_time, reporter_id=EXCLUDED.reporter_id, ev_locx=EXCLUDED.ev_locx, ev_locy=EXCLUDED.ev_locy, ev_area=EXCLUDED.ev_area;', reportsArr); 
+  const upsertSql = pgFormat(
+    'DELETE FROM t_reports WHERE report_id NOT IN (%L); ' +
+    'INSERT INTO t_reports (ev_type, ev_time, ev_report_time, reporter_id, report_id, ev_locx, ev_locy, ev_area) ' +
+    'VALUES %L ' + 
+    'ON CONFLICT (report_id) ' + 
+    'DO UPDATE SET ' +
+    'ev_type=EXCLUDED.ev_type, ev_time=EXCLUDED.ev_time, ev_report_time=EXCLUDED.ev_report_time, reporter_id=EXCLUDED.reporter_id, ev_locx=EXCLUDED.ev_locx, ev_locy=EXCLUDED.ev_locy, ev_area=EXCLUDED.ev_area;', newReportsId, reportsArr); 
 
-    await pool.query(upsertSql);
+  await pool.query(upsertSql);
 }
 
 const reportsByDate = (date) => {
