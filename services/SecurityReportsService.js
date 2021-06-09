@@ -84,11 +84,30 @@ const updateReportsThreshold = async (thresholdArray) => {
   return await pool.query(query); 
 }
 
+const getReportsPreviousWeek = async () => {
+  let allReports = JSON.parse(await getReports());
+  let today = new Date();
+  let week = [];
+
+  for(let day = new Date(today); day >= new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6); day.setDate(day.getDate() - 1)) {
+    const dayEvents = allReports.filter(report => {
+    reportDate = new Date(report.ev_time);
+    return reportDate.getDate() === day.getDate() &&
+            reportDate.getMonth() === day.getMonth() &&
+            reportDate.getYear() === day.getYear();
+          });
+    week.push({date: new Date(day), count: dayEvents.length});
+  }
+
+  return JSON.stringify(week);
+}
+
 module.exports = { 
   getReports,
   getReportById,
   reportsByDate,
   getReportsThreshold,
   getReportsThresholdByDay,
-  updateReportsThreshold
+  updateReportsThreshold,
+  getReportsPreviousWeek
 };

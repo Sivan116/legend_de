@@ -15,4 +15,8 @@ router.put('/threshold', async (req, res) => {
    res.send(await reportsService.updateReportsThreshold(thresholdArray));
 });
 
+router.get('/previousWeek', async (req, res, next) => {
+    res.send(await reportsService.getReportsPreviousWeek());
+ });
+
 module.exports = router;
