@@ -30,7 +30,10 @@ const parseReports = async (reportsJSON) => {
         reportsToBackup.push([report.ev_type, report.ev_time, report.ev_report_time, report.reporter_id, report.report_id, report.ev_locx, report.ev_locy, report.ev_area]);
         return {"report_id": report.report_id,"ev_type": report.ev_type, "ev_time": report.ev_time, "ev_area": report.ev_area};
     });
-    await backupReports(reportsToBackup);
+
+    if (reportsToBackup) {
+      await backupReports(reportsToBackup);
+    }
 
     return reportsJSON;
 }

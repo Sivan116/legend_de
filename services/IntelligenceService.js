@@ -5,18 +5,16 @@ const pgFormat = require('pg-format');
 const getSuspects = async () => {
    return axios.get('http://intelligence-api-git-2-intelapp1.apps.openforce.openforce.biz/api/suspects')
   .then(response => {
-    return getSuspectsReport(response.data).filter(suspect => { return suspect.wanted === false })
-                                           .map(suspect =>  { return {
-                                                "firstName": suspect.firstName, "lastName": suspect.lastName, "id": suspect.id
-                                            }});;
+    return removeWantedProperty(parseSuspects(response.data).filter(suspect => { return suspect.wanted === false }));
   })
   .catch(err => {
+    console.log()
     return pool.query('SELECT * FROM t_suspects_wanted;')
-                        .then(res => { return res.rows; });
+                        .then(res => { return removeWantedProperty(parseSuspectsFromDBBackup(res.rows)); });
   });
 }
 
-const getSuspectsReport = async (suspects) => {
+const parseSuspects = async (suspects) => {
     let suspectsToBackup = [];
 
     suspects = suspects.map(suspect => {
@@ -24,8 +22,16 @@ const getSuspectsReport = async (suspects) => {
         return {"firstName":suspect.person.firstName, "lastName": suspect.person.lastName, "id": suspect.person.id, "wanted": suspect.wanted };
         
     });
-    await backupSuspects(suspectsToBackup);
+    if (suspectsToBackup) {
+      await backupSuspects(suspectsToBackup);
+    }
     return suspects;
+}
+
+const parseSuspectsFromDBBackup = (suspects) => {
+  return suspects.map(suspect => {
+      return {"firstName":suspect.firstname, "lastName": suspect.lastname, "id": suspect.personid, "wanted": suspect.wanted };
+  });
 }
 
 const backupSuspects = async (suspectsToBackup) => {
@@ -42,15 +48,18 @@ const backupSuspects = async (suspectsToBackup) => {
 const getWanted = async () => {
     return axios.get('http://intelligence-api-git-2-intelapp1.apps.openforce.openforce.biz/api/suspects/wanted')
   .then(response => {
-    return getSuspectsReport(response.data).filter(suspect => { return suspect.wanted === true })
-                                           .map(suspect =>  { return {
-        "firstName": suspect.firstName, "lastName": suspect.lastName, "id": suspect.id
-    }});
+    return removeWantedProperty(parseSuspects(response.data).filter(suspect => { return suspect.wanted === true }));
   })
   .catch(error => {
     return pool.query('SELECT * FROM t_suspects_wanted WHERE wanted = true')
-                        .then(res => { return res.rows; });
+                        .then(res => { return removeWantedProperty(parseSuspectsFromDBBackup(res.rows)); });
   });
+}
+
+const removeWantedProperty = (suspects) => {
+  return suspects.map(suspect =>  { return {
+    "firstName": suspect.firstName, "lastName": suspect.lastName, "id": suspect.id
+  }});
 }
 
 module.exports = { 
