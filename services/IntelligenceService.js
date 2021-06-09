@@ -30,11 +30,11 @@ const getSuspectsReport = async (suspects) => {
 
 const backupSuspects = async (suspectsToBackup) => {
     const upsertSql = pgFormat(
-      'INSERT INTO t_suspects_wanted(personId, firstName, lastName, phoneNumber, adress, personImageURL, started, wanted) ' +
+      'INSERT INTO t_suspects_wanted(personid, firstname, lastname, phonenumber, address, personimageurl, started, wanted) ' +
       'VALUES %L ' +
       'ON CONFLICT (personId) ' + 
       'DO UPDATE SET ' +  
-      'firstName=EXCLUDED.firstName, lastName=EXCLUDED.lastName, phoneNumber=EXCLUDED.phoneNumber, adress=EXCLUDED.adress, personImageURL=EXCLUDED.personImageURL, started=EXCLUDED.started, wanted=EXCLUDED.wanted;', suspectsToBackup); 
+      'firstName=EXCLUDED.firstName, lastName=EXCLUDED.lastName, phoneNumber=EXCLUDED.phoneNumber, adress=EXCLUDED.address, personImageURL=EXCLUDED.personImageURL, started=EXCLUDED.started, wanted=EXCLUDED.wanted;', suspectsToBackup); 
     
     await pool.query(upsertSql);
 }
