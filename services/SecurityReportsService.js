@@ -31,7 +31,6 @@ const getReportsPreviousWeek = async () => {
   }
 
   return JSON.stringify(week);
-  
 }
 
 
