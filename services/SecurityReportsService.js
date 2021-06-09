@@ -14,6 +14,9 @@ const getReports = async () => {
 }
 
 const getReportById = async (type, id) => {
+  // Reverse the string because the hebrew characters are reversed when recived.
+  type = type.split( '' ).reverse( ).join( '' );
+  console.log(type)
   switch (type) {
     case 'תאונה':
       type = 'accident';
@@ -32,8 +35,8 @@ const getReportById = async (type, id) => {
   .then(response => {
     return response.data; 
   })
-  .catch(error => {
-    throw error("can't get reports");
+  .catch(err => {
+    console.log("Can't fetch from Security by id : (" +type + ', ' + id + ')' );
   });
 }
 

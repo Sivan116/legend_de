@@ -7,6 +7,7 @@ router.get('/', async (req, res, next) => {
 });
 
 router.post('/', async (req, res) => {
+   console.log(req.body);
    const { type, id } = req.body;
    res.send(await reportsService.getReportById(type, id))
 });
