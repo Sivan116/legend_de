@@ -10,8 +10,8 @@ const getSuspects = async () => {
                                                 "firstName": suspect.firstName, "lastName": suspect.lastName, "id": suspect.id
                                             }});;
   })
-  .catch(error => {
-    return pool.query('SELECT * FROM t_suspect_wanted')
+  .catch(err => {
+    return pool.query('SELECT * FROM t_suspects_wanted')
                         .then(res => { return res.rows; });
   });
 }
@@ -20,7 +20,7 @@ const getSuspectsReport = async (suspects) => {
     let suspectsToBackup = [];
 
     suspects = suspects.map(suspect => {
-        suspectsToBackup.push([suspect.person.id, suspect.person.firstName, suspect.person.lastName, suspect.person.phoneNumber, suspect.person.adress, suspect.person.personImageUrl, suspect.started, suspect.wanted]);
+        suspectsToBackup.push([suspect.person.id, suspect.person.firstName, suspect.person.lastName, suspect.person.phoneNumber, suspect.person.address, suspect.person.personImageUrl, suspect.started, suspect.wanted]);
         return {"firstName":suspect.person.firstName, "lastName": suspect.person.lastName, "id": suspect.person.id, "wanted": suspect.wanted };
         
     });
@@ -34,7 +34,7 @@ const backupSuspects = async (suspectsToBackup) => {
       'VALUES %L ' +
       'ON CONFLICT (personId) ' + 
       'DO UPDATE SET ' +  
-      'firstName=EXCLUDED.firstName, lastName=EXCLUDED.lastName, phoneNumber=EXCLUDED.phoneNumber, adress=EXCLUDED.address, personImageURL=EXCLUDED.personImageURL, started=EXCLUDED.started, wanted=EXCLUDED.wanted;', suspectsToBackup); 
+      'firstName=EXCLUDED.firstName, lastName=EXCLUDED.lastName, phoneNumber=EXCLUDED.phoneNumber, address=EXCLUDED.address, personImageURL=EXCLUDED.personImageURL, started=EXCLUDED.started, wanted=EXCLUDED.wanted;', suspectsToBackup); 
     
     await pool.query(upsertSql);
 }
@@ -48,7 +48,7 @@ const getWanted = async () => {
     }});
   })
   .catch(error => {
-    return pool.query('SELECT * FROM t_suspect_wanted WHERE wanted = true')
+    return pool.query('SELECT * FROM t_suspects_wanted WHERE wanted = true')
                         .then(res => { return res.rows; });
   });
 }
