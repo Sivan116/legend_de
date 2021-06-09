@@ -3,11 +3,12 @@ const pool =  require('../db/config');
 const pgFormat = require('pg-format');
 
 const getReports = async () => {
-  return axios.get('http://police-site-server-git-sivan-securityapp1.apps.openforce.openforce.biz/report ', { timeout: 9000 })
+  return axios.get('http://police-site-server-git-sivan-securityapp1.apps.openforce.openforce.biz/report', { timeout: 9000 })
   .then(response => {
     return parseReports(response.data);
   })
   .catch(error => {
+    console.log('getReports ' + error)
     return pool.query('SELECT * FROM t_reports')
                         .then(res => { return res.rows; });
   });
@@ -33,6 +34,7 @@ const getReportById = async (type, id) => {
     return response.data; 
   })
   .catch(err => {
+    console.log(error)
     console.log("Can't fetch from Security by id : (" +type + ', ' + id + ')' );
     return Error;
   });
@@ -41,7 +43,7 @@ const getReportById = async (type, id) => {
 const parseReports = async (reportsJSON) => {
     let reportsToBackup = [];
     reportsJSON = reportsJSON.map(report => {
-        reportsToBackup.push([report.ev_type, report.ev_time, report.ev_report_time, report.reporter_id, report.report_id, report.ev_locx, report.ev_locy, report.ev_area]);
+        reportsToBackup.push([report.ev_type, report.ev_time, report.evreporttime, report.reporter_id, report.report_id, report.ev_locx, report.ev_locy, report.ev_area]);
         return {"report_id": report.report_id,"ev_type": report.ev_type, "ev_time": report.ev_time, "ev_area": report.ev_area};
     });
 

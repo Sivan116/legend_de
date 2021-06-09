@@ -5,19 +5,21 @@ const pgFormat = require('pg-format');
 const getSuspects = async () => {
    return axios.get('http://intelligence-api-git-2-intelapp1.apps.openforce.openforce.biz/api/suspects', { timeout: 9000 })
   .then(response => {
-    return removeWantedProperty(parseSuspects(response.data).filter(suspect => { return suspect.wanted === false }));
+    return parseSuspects(response.data).then(prasedSuspects => prasedSuspects.filter(suspect => { return suspect.wanted === false })).then(prasedSuspectsNotWanted => removeWantedProperty(prasedSuspectsNotWanted));
   })
   .catch(err => {
+    console.log('getSuspects' + err)
     return pool.query('SELECT * FROM t_suspects_wanted;')
-                        .then(res => { return removeWantedProperty(parseSuspectsFromDBBackup(res.rows)); });
+                        .then(res => { return removeWantedPropertyFromDBBackup(parseSuspectsFromDBBackup(res.rows)); });
   });
 }
 
 const parseSuspects = async (suspects) => {
     let suspectsToBackup = [];
 
+
     suspects = suspects.map(suspect => {
-        suspectsToBackup.push([suspect.person.id, suspect.person.firstName, suspect.person.lastName, suspect.person.phoneNumber, suspect.person.address, suspect.person.personImageUrl, suspect.started, suspect.wanted]);
+        suspectsToBackup.push([suspect.person.id, suspect.person.firstName, suspect.person.lastName, suspect.person.phoneNumber, suspect.person.address, suspect.person.personImageURL, suspect.started, suspect.wanted]);
         return {"firstName":suspect.person.firstName, "lastName": suspect.person.lastName, "id": suspect.person.id, "wanted": suspect.wanted };
         
     });
@@ -47,15 +49,22 @@ const backupSuspects = async (suspectsToBackup) => {
 const getWanted = async () => {
     return axios.get('http://intelligence-api-git-2-intelapp1.apps.openforce.openforce.biz/api/suspects/wanted', { timeout: 9000 })
   .then(response => {
-    return removeWantedProperty(parseSuspects(response.data).filter(suspect => { return suspect.wanted === true }));
+    return parseSuspects(response.data).then(prasedSuspects => removeWantedProperty(prasedSuspects) );
   })
   .catch(error => {
+    console.log('getWanted ' + error)
     return pool.query('SELECT * FROM t_suspects_wanted WHERE wanted = true')
-                        .then(res => { return removeWantedProperty(parseSuspectsFromDBBackup(res.rows)); });
+                        .then(res => { return removeWantedPropertyFromDBBackup(parseSuspectsFromDBBackup(res.rows)); });
   });
 }
 
 const removeWantedProperty = (suspects) => {
+  return suspects.map(suspect =>  { return {
+    "firstName": suspect.firstName, "lastName": suspect.lastName, "id": suspect.id
+  }});
+}
+
+const removeWantedPropertyFromDBBackup = (suspects) => {
   return suspects.map(suspect =>  { return {
     "firstName": suspect.firstName, "lastName": suspect.lastName, "id": suspect.id
   }});
