@@ -3,8 +3,8 @@ var router = express.Router();
 const eventsService = require('../services/EventsService');
 
 router.post('/', async (req, res) => {
-    const { weather } = req.body;
-    res.send(await eventsService.updateWeather(weather));
+    const { events, weather } = req.body;
+    res.send(await eventsService.updateEvents(events, weather));
 });
 
 router.get('/weather', async (req, res) => {

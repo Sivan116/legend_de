@@ -1,13 +1,12 @@
 const axios = require('axios');
 const pool =  require('../db/config');
-const format = require('pg-format');
+const pgFormat = require('pg-format');
 
 const getReports = async () => {
   return axios.get('http://police-site-server-git-sivan-securityapp1.apps.openforce.openforce.biz/report')
   .then(response => {
-    const parsedData = parseReports(response.data);
-
-    return JSON.stringify(parsedData);
+    const asd =  parseReports(response.data);
+    return asd;
   })
   .catch(error => {
     return pool.query('SELECT * FROM t_reports')
@@ -26,21 +25,25 @@ const getReportById = async (id) => {
   });
 }
 
-const parseReports = (reportsJSON) => {
-    reportsJSON = JSON.parse(reportsJSON);
+const parseReports = async (reportsJSON) => {
     let reportsToBackup = [];
-    reportsJSON = reportsJSON.reports.map(report => {
-        reportsToBackup.push([report.ev_type, report.ev_time, report.ev_report_time, report.reporter_id, report.ev_locx, report.ev_locy, report.ev_area, report.report]);
-        return {"report_id": report.report,"ev_type": report.ev_type, "ev_time": report.ev_time, "ev_area": report.ev_area};
+    reportsJSON = reportsJSON.map(report => {
+        reportsToBackup.push([report.ev_type, report.ev_time, report.ev_report_time, report.reporter_id, report.report_id, report.ev_locx, report.ev_locy, report.ev_area]);
+        return {"report_id": report.report_id,"ev_type": report.ev_type, "ev_time": report.ev_time, "ev_area": report.ev_area};
     });
-    backupReports(reportsToBackup);
-    return reports;
+    await backupReports(reportsToBackup);
+
+    return reportsJSON;
 }
 
 const backupReports = async (reportsArr) => {
-    const upsertSql = format('INSERT INTO t_reports (ev_type, ev_time, ev_report_time, reporter_id, ev_locx, ev_locy, ev_area, report)' +
-     'VALUES %L ON CONFLICT ON report' + 
-    'DO UPDATE SET ev_type=EXLUDED.ev_type, ev_time=EXLUDED.ev_time, ev_report_time=EXLUDED.ev_report_time, ev_locx=EXLUDED.ev_locx, ev_locy=EXLUDED.ev_locy, ev_area=EXLUDED.ev_area, reporter_id=EXLUDED.reporter_id;', reportsArr); 
+
+    const upsertSql = pgFormat(
+      'INSERT INTO t_reports (ev_type, ev_time, ev_report_time, reporter_id, report_id, ev_locx, ev_locy, ev_area) ' +
+      'VALUES %L ' + 
+      'ON CONFLICT (report_id) ' + 
+      'DO UPDATE SET ' +
+      'ev_type=EXCLUDED.ev_type, ev_time=EXCLUDED.ev_time, ev_report_time=EXCLUDED.ev_report_time, reporter_id=EXCLUDED.reporter_id, ev_locx=EXCLUDED.ev_locx, ev_locy=EXCLUDED.ev_locy, ev_area=EXCLUDED.ev_area;', reportsArr); 
 
     await pool.query(upsertSql);
 }
@@ -71,18 +74,39 @@ const getReportsThresholdByDay = async (day) => {
 
 const updateReportsThreshold = async (thresholdArray) => {
   twoDArray = [];
-  for (threshold in thresholdArray) {
-    twoDArray.push([threshold])
-  }
-  const upsertSql = format('INSERT INTO t_reports_threshold (threshold)' +
-     'VALUES %L ON CONFLICT ON day' + 
-    'DO UPDATE SET' +  
-    'threshold=EXLUDED.threshold', twoDArray); 
-    
-    pool.query(upsertSql).then(res => { return res.rows[0];});
 
-  return await pool.query(query); 
+  for (let dayIndex = 0; dayIndex < thresholdArray.length; dayIndex++) {
+    twoDArray.push([dayIndex, thresholdArray[dayIndex]])
+  }
+
+  const upsertSql = pgFormat(
+     'INSERT INTO t_reports_threshold(day, threshold) ' +
+     'VALUES %s ' +
+     'ON CONFLICT (day) ' + 
+     'DO UPDATE SET ' +  
+     'threshold = EXCLUDED.threshold;', twoDArray); 
+
+    return await pool.query(upsertSql);
 }
+
+const getReportsPreviousWeek = async () => {
+  let allReports = await getReports();
+  let today = new Date();
+  let week = [];
+
+  for(let day = new Date(today); day >= new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6); day.setDate(day.getDate() - 1)) {
+    const dayEvents = allReports.filter(report => {
+    reportDate = new Date(report.ev_time);
+    return reportDate.getDate() === day.getDate() &&
+            reportDate.getMonth() === day.getMonth() &&
+            reportDate.getYear() === day.getYear();
+          });
+    week.push({date: new Date(day), count: dayEvents.length});
+  }
+
+  return week;
+}
+
 
 module.exports = { 
   getReports,
@@ -90,5 +114,6 @@ module.exports = {
   reportsByDate,
   getReportsThreshold,
   getReportsThresholdByDay,
-  updateReportsThreshold
+  updateReportsThreshold,
+  getReportsPreviousWeek
 };

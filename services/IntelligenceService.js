@@ -1,6 +1,6 @@
 const axios = require('axios');
 const pool =  require('../db/config');
-const format = require('pg-format');
+const pgFormat = require('pg-format');
 
 const getSuspects = async () => {
    return axios.get('http://intelligence-api-git-2-intelapp1.apps.openforce.openforce.biz/api/suspects')
@@ -16,7 +16,7 @@ const getSuspects = async () => {
   });
 }
 
-const getSuspectsReport = (suspects) => {
+const getSuspectsReport = async (suspects) => {
     let suspectsToBackup = [];
 
     suspects = suspects.map(suspect => {
@@ -24,15 +24,17 @@ const getSuspectsReport = (suspects) => {
         return {"firstName":suspect.person.firstName, "lastName": suspect.person.lastName, "id": suspect.person.id, "wanted": suspect.wanted };
         
     });
-    backupSuspects(suspectsToBackup);
+    await backupSuspects(suspectsToBackup);
     return suspects;
 }
 
 const backupSuspects = async (suspectsToBackup) => {
-    const upsertSql = format('INSERT INTO t_suspects_wanted (personId, firstName, lastName, phoneNumber, adress, personImageURL, started, wanted)' +
-     'VALUES %L ON CONFLICT ON personId' + 
-    'DO UPDATE SET' +  
-    'firstName=EXLUDED.firstName, lastName=EXLUDED.lastName, phoneNumber=EXLUDED.phoneNumber, adress=EXLUDED.adress, personImageURL=EXLUDED.personImageURL, started=EXLUDED.started, wanted=EXLUDED.wanted;', suspectsToBackup); 
+    const upsertSql = pgFormat(
+      'INSERT INTO t_suspects_wanted(personId, firstName, lastName, phoneNumber, adress, personImageURL, started, wanted) ' +
+      'VALUES %L ' +
+      'ON CONFLICT (personId) ' + 
+      'DO UPDATE SET ' +  
+      'firstName=EXCLUDED.firstName, lastName=EXCLUDED.lastName, phoneNumber=EXCLUDED.phoneNumber, adress=EXCLUDED.adress, personImageURL=EXCLUDED.personImageURL, started=EXCLUDED.started, wanted=EXCLUDED.wanted;', suspectsToBackup); 
     
     await pool.query(upsertSql);
 }
