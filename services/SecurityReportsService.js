@@ -16,7 +16,7 @@ const getReports = async () => {
 }
 
 const getReportById = async (id) => {
-  return axios.get(`http://police-site-server-git-sivan-securityapp1.apps.openforce.openforce.biz/accident/id/${id}}`)//TODO get Secutiry API
+  return axios.get(`http://police-site-server-git-sivan-securityapp1.apps.openforce.openforce.biz/accident/id/${id}}`)
   .then(response => {
 
     return response.data; 
@@ -30,17 +30,17 @@ const parseReports = (reportsJSON) => {
     reportsJSON = JSON.parse(reportsJSON);
     let reportsToBackup = [];
     reportsJSON = reportsJSON.reports.map(report => {
-        reportsToBackup.push([report.ev_type, report.ev_time, report.ev_report_time, report.reporter_id, report.ev_area, report.report_id]);
-        return {"report_id": report.report_id,"ev_type": report.ev_type, "ev_time": report.ev_time, "ev_area": report.ev_area};
+        reportsToBackup.push([report.ev_type, report.ev_time, report.ev_report_time, report.reporter_id, report.ev_locx, report.ev_locy, report.ev_area, report.report]);
+        return {"report_id": report.report,"ev_type": report.ev_type, "ev_time": report.ev_time, "ev_area": report.ev_area};
     });
     backupReports(reportsToBackup);
     return reports;
 }
 
 const backupReports = async (reportsArr) => {
-    const upsertSql = format('INSERT INTO t_events (ev_type, ev_time,ev_report_time, reporter_id, ev_area, report_id)' +
-     'VALUES %L ON CONFLICT ON report_id' + 
-    'DO UPDATE SET ev_type=EXLUDED.ev_type, ev_time=EXLUDED.ev_time, ev_report_time=EXLUDED.ev_report_time, ev_area=EXLUDED.ev_area, reporter_id=EXLUDED.reporter_id;', reportsArr); 
+    const upsertSql = format('INSERT INTO t_reports (ev_type, ev_time, ev_report_time, reporter_id, ev_locx, ev_locy, ev_area, report)' +
+     'VALUES %L ON CONFLICT ON report' + 
+    'DO UPDATE SET ev_type=EXLUDED.ev_type, ev_time=EXLUDED.ev_time, ev_report_time=EXLUDED.ev_report_time, ev_locx=EXLUDED.ev_locx, ev_locy=EXLUDED.ev_locy, ev_area=EXLUDED.ev_area, reporter_id=EXLUDED.reporter_id;', reportsArr); 
 
     await pool.query(upsertSql);
 }
@@ -84,30 +84,11 @@ const updateReportsThreshold = async (thresholdArray) => {
   return await pool.query(query); 
 }
 
-const getReportsPreviousWeek = async () => {
-  let allReports = JSON.parse(await getReports());
-  let today = new Date();
-  let week = [];
-
-  for(let day = new Date(today); day >= new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6); day.setDate(day.getDate() - 1)) {
-    const dayEvents = allReports.filter(report => {
-    reportDate = new Date(report.ev_time);
-    return reportDate.getDate() === day.getDate() &&
-            reportDate.getMonth() === day.getMonth() &&
-            reportDate.getYear() === day.getYear();
-          });
-    week.push({date: new Date(day), count: dayEvents.length});
-  }
-
-  return JSON.stringify(week);
-}
-
 module.exports = { 
   getReports,
   getReportById,
   reportsByDate,
   getReportsThreshold,
   getReportsThresholdByDay,
-  updateReportsThreshold,
-  getReportsPreviousWeek
+  updateReportsThreshold
 };
