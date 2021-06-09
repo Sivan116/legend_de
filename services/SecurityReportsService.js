@@ -5,8 +5,7 @@ const pgFormat = require('pg-format');
 const getReports = async () => {
   return axios.get('http://police-site-server-git-sivan-securityapp1.apps.openforce.openforce.biz/report')
   .then(response => {
-    const asd =  parseReports(response.data);
-    return asd;
+    return parseReports(response.data);
   })
   .catch(error => {
     return pool.query('SELECT * FROM t_reports')
@@ -91,10 +90,11 @@ const updateReportsThreshold = async (thresholdArray) => {
 
 const getReportsPreviousWeek = async () => {
   let allReports = await getReports();
-  let today = new Date();
+  let yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
   let week = [];
 
-  for(let day = new Date(today); day >= new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6); day.setDate(day.getDate() - 1)) {
+  for(let day = new Date(yesterday); day >= new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate() - 6); day.setDate(day.getDate() - 1)) {
     const dayEvents = allReports.filter(report => {
     reportDate = new Date(report.ev_time);
     return reportDate.getDate() === day.getDate() &&
@@ -106,7 +106,6 @@ const getReportsPreviousWeek = async () => {
 
   return week;
 }
-
 
 module.exports = { 
   getReports,

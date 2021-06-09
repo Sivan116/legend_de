@@ -11,7 +11,7 @@ const getSuspects = async () => {
                                             }});;
   })
   .catch(err => {
-    return pool.query('SELECT * FROM t_suspects_wanted')
+    return pool.query('SELECT * FROM t_suspects_wanted;')
                         .then(res => { return res.rows; });
   });
 }
