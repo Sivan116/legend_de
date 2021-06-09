@@ -45,7 +45,7 @@ const parseReports = async (reportsJSON) => {
   let newReportsId = [];
   reportsJSON = reportsJSON.map(report => {
     newReportsId.push(report.report_id);
-      reportsToBackup.push([report.ev_type, report.ev_time, report.ev_report_time, report.reporter_id, report.report_id, report.ev_locx, report.ev_locy, report.ev_area]);
+      reportsToBackup.push([report.ev_type, report.ev_time, report.evreporttime, report.reporter_id, report.report_id, report.ev_locx, report.ev_locy, report.ev_area]);
       return {"report_id": report.report_id,"ev_type": report.ev_type, "ev_time": report.ev_time, "ev_area": report.ev_area};
   });
 
