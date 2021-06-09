@@ -6,6 +6,11 @@ router.get('/', async (req, res, next) => {
    res.send(await reportsService.getReports());
 });
 
+router.post('/', async (req, res) => {
+   const { type, id } = req.body;
+   res.send(await reportsService.getReportById(type, id))
+});
+
 router.get('/threshold', async (req, res) => {
    res.send(await reportsService.getReportsThreshold());
 });

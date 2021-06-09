@@ -3,7 +3,7 @@ const pool =  require('../db/config');
 const pgFormat = require('pg-format');
 
 const getReports = async () => {
-  return axios.get('http://police-site-server-git-sivan-securityapp1.apps.openforce.openforce.biz/report', { timeout: 9000 })
+  return axios.get('http://police-site-server-git-sivan-securityapp1.apps.openforce.openforce.biz/report ', { timeout: 9000 })
   .then(response => {
     return parseReports(response.data);
   })
@@ -13,8 +13,22 @@ const getReports = async () => {
   });
 }
 
-const getReportById = async (id) => {
-  return axios.get(`http://police-site-server-git-sivan-securityapp1.apps.openforce.openforce.biz/accident/id/${id}}`)
+const getReportById = async (type, id) => {
+  switch (type) {
+    case 'תאונה':
+      type = 'accident';
+      break;
+    case 'חטיפה':
+        type = 'kidnap';
+      break;
+    case 'ירי':
+        type = 'shooting';
+      break;
+    case 'דקירה':
+        type = 'stabbing';
+      break;
+  }
+  return axios.get(`http://police-site-server-git-sivan-securityapp1.apps.openforce.openforce.biz/${type}/id/${id}`)
   .then(response => {
     return response.data; 
   })
